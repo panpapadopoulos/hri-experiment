@@ -1,0 +1,77 @@
+<!doctype html><meta charset="utf-8"><title>HRI checks</title><link rel="stylesheet" href="/static/css/style.css"><script>window.testErrors=[];window.addEventListener("error",e=>testErrors.push(e.message));window.addEventListener("unhandledrejection",e=>testErrors.push(String(e.reason)));</script>
+<script src="/static/lib/jquery-3.4.1.min.js"></script>
+<script>var uniqueId='debugTests',condition=0,adServerLoc='/complete',mode='debug',codeversion='test';var records=[],completed=false;function PsiTurk(){this.recordTrialData=r=>records.push(r);this.getTrialData=()=>[];this.saveData=c=>c.success();this.finishInstructions=()=>{};this.completeHIT=()=>{completed=true;};}</script>
+<script src="/static/js/settings.js"></script><script src="/static/js/stimuli.js"></script><script src="/static/js/questionnaires.js"></script><script src="/static/js/trial.js"></script><script src="/static/js/task.js"></script>
+<script>
+$(async function(){try{
+ const assert=(v,m)=>{if(!v)throw Error(m);};
+ HRI.validate();
+ let previousActionTop=null;
+ const form=document.getElementById('demographics');assert(!form.checkValidity(),'blank demographics blocked');
+ form.elements.age.value='25';form.elements.gender.value='Prefer not to say';form.elements.robot_experience.value='None';assert(form.checkValidity(),'complete demographics accepted');
+ const correctTrial={robot_correct:true,correct_section:'A'};
+ assert(HRI.feedbackPepper(correctTrial,{manual_check_used:true,followed_robot:true,participant_choice:'A',timed_out:false}).includes("Your check confirmed the item location."),'checked then followed message');
+ assert(!HRI.feedbackPepper({robot_correct:false},{manual_check_used:true,followed_robot:true}).includes("Your check confirmed the item location."),'wrong robot retains recovery');
+ assert(HRI.feedbackPepper(correctTrial,{participant_choice:'B',followed_robot:false,timed_out:false})==='','no extra disagreement response');
+ assert(HRI.feedbackPepper(correctTrial,{participant_choice:null,followed_robot:false,timed_out:true})==='','no timeout disagreement');
+ assert(HRI.feedbackPepper(correctTrial,{participant_choice:'A',followed_robot:true,timed_out:false})==='','no disagreement when following');
+ for(const c of HRI.config.conditions){HRI.recoveryCondition=c;assert(HRI.feedbackPepper({robot_correct:false},{}).includes(c==='acknowledgment'?'error.png':'apology.png'),'condition pose');}
+ HRI.recoveryCondition='acknowledgment';HRI.suggestionCount=0;const firstPose=HRI.pepper('Suggestion'),secondPose=HRI.pepper('Suggestion');assert(firstPose.includes('Suggestion1.png')&&!firstPose.includes('Suggestion2.png'),'single first pose');assert(secondPose.includes('Suggestion2.png')&&!secondPose.includes('Suggestion1.png'),'single second pose');assert(HRI.pepper('Suggestion').includes('Suggestion3.png'),'third suggestion pose');assert(HRI.pepper('Suggestion').includes('Suggestion1.png'),'pose cycles back');HRI.suggestionCount=0;
+
+ const gender=document.querySelector('select[name="gender"]');assert(gender,'gender dropdown');assert([...gender.options].slice(1).map(o=>o.value).join(',')==='Male,Female,Non-binary,Other,Prefer not to say','gender options');gender.value='Other';assert(gender.value==='Other','gender selection');
+
+ for(let p=0;p<100;p++)for(let n=1;n<=15;n++){
+  const phase=n<=4?'build_trust':n<=11?'errors_recovery':'continued_interaction',t=HRI.makeTrial('p'+p,phase,n);
+  assert(t.robot_correct===![5,8,11].includes(n),'schedule');assert((t.robot_suggestion===t.correct_section)===t.robot_correct,'suggestion');
+  assert(HRI.sections[Math.floor(t.rack_items.indexOf(t.target_item)/4)]===t.correct_section,'target location');
+  assert(new Set(t.rack_items).size===16,'unique items');assert(HRI.items.find(i=>i.name===t.target_item).correctSection===t.correct_section,'fixed mapping');
+ }
+ let now=0;Object.defineProperty(performance,'now',{configurable:true,value:()=>now});
+ const t=HRI.makeTrial('test','errors_recovery',5);let result;
+ HRI.runTrial(t,r=>result=r);now=100;document.getElementById('manual').click();now=600;document.getElementById('back').click();now=900;document.getElementById('manual').click();now=1200;document.getElementById('back').click();now=1500;document.querySelector('[data-choice="'+t.robot_suggestion+'"]').click();
+ assert(result.manual_check_used&&result.followed_robot&&!result.participant_correct,'check and follow independent');assert(result.manual_check_duration_ms===800,'cumulative manual duration');assert(result.response_time_ms===1500,'response time');
+ now=0;HRI.runTrial(t,r=>result=r);now=100;document.getElementById('manual').click();now=25001;document.getElementById('back').click();assert(result.timed_out&&result.participant_choice===null&&result.response_time_ms===null,'timeout while inspecting');
+ delete performance.now;
+ // Drive every page through all three between-subject conditions.
+ for(const conditionName of HRI.config.conditions){
+  HRI.recoveryCondition=conditionName;records=[];completed=false;previousActionTop=null;HRI.begin();let guard=0;
+  while(!completed&&guard++<250){
+   assert(!/Phase [123]|Build Trust|Error Phase|Recovery Phase/.test(document.body.innerText),'no participant phase labels');
+   const ratings=document.getElementById('ratings'),feedback=document.getElementById('feedback'),choice=document.querySelector('[data-choice]'),button=document.getElementById('continue');
+   if(ratings){ratings.querySelectorAll('input[value="4"]').forEach(x=>x.checked=true);ratings.dispatchEvent(new Event('submit',{cancelable:true}));}
+   else if(feedback){feedback.dispatchEvent(new Event('submit',{cancelable:true}));}
+   else if(choice){assert(document.querySelector('.pepper-message'),'Pepper recommendation');const trials=records.filter(r=>r.record_type==='trial'),phase=trials.length<2?'practice':trials.length<6?'build_trust':trials.length<13?'errors_recovery':'continued_interaction',number=trials.length<2?trials.length+1:trials.length-1;const t=HRI.makeTrial(uniqueId,phase,number);const answer=trials.length%2===0?t.correct_section:HRI.sections.find(s=>s!==t.correct_section);const actionRect=document.querySelector('.task-action-area').getBoundingClientRect();if(previousActionTop!==null)assert(Math.abs(actionRect.top-previousActionTop)<2,'next trial action area stays fixed');previousActionTop=actionRect.top;document.querySelector('[data-choice="'+answer+'"]').click();}
+   else if(button){
+    if(document.querySelector('.feedback-card')){assert(Math.abs(document.querySelector('.task-action-area').getBoundingClientRect().top-previousActionTop)<2,'feedback action area stays fixed');const continueRect=button.getBoundingClientRect();assert(continueRect.bottom<innerHeight,'Continue visible without scroll');const last=records.filter(r=>r.record_type==='trial').at(-1);assert(document.querySelector(last.participant_correct?'.feedback-correct':'.feedback-incorrect'),'feedback state');assert(document.querySelector('.answer-feedback').textContent.includes('Section '+last.correct_section),'correct feedback section');if(!last.robot_correct)assert(document.querySelector('.speech-bubble').textContent.includes(HRI.config.messages[conditionName]),'recovery speech bubble');}
+    button.click();
+   }else throw Error('Unknown flow page: '+document.body.textContent);
+  }
+  assert(completed,'completed');const trials=records.filter(r=>r.record_type==='trial');assert(trials.length===17,'17 trials');assert(trials.filter(t=>t.phase==='practice').length===2,'exactly two practice trials');assert(trials.filter(t=>t.phase!=='practice').map(t=>t.trial_number).join(',')===Array.from({length:15},(_,i)=>i+1).join(','),'continuous main numbering');assert(trials.every(r=>r.recovery_condition===conditionName),'stable condition');
+  const trustTrialCounts=records.filter(r=>r.record_type==='trust').map(r=>records.slice(0,records.indexOf(r)).filter(t=>t.record_type==='trial'&&t.phase!=='practice').length);assert(trustTrialCounts.join(',')==='0,7,15','exact trust timing');
+  const trust=records.filter(r=>r.record_type==='trust');assert(trust.length===3,'three trust checks');assert(trust.map(r=>r.checkpoint).join(',')==='baseline,early_recovery,end_phase_3','trust order');assert(records.some(r=>r.record_type==='workload'&&r.performance===4&&r.frustration===4),'workload');
+ }
+ let retries=0;psiTurk.saveData=c=>{if(retries++===0)c.error();else c.success();};let saved=false;HRI.save(()=>saved=true);document.getElementById('retry').click();assert(saved,'save retry');
+
+ // Verify actual full-screen inspection and live elapsed time.
+ let inspectionResult;
+ HRI.runTrial(HRI.makeTrial('inspection','build_trust',1),r=>inspectionResult=r);
+ const image=document.getElementById('rack-image');
+ await new Promise((resolve,reject)=>{if(image.complete){image.naturalWidth?resolve():reject(Error('rack load'));}else{image.onload=resolve;image.onerror=()=>reject(Error('rack load'));}});
+ assert(parseFloat(getComputedStyle(document.querySelector('.target-display h1')).fontSize)>=34,'large target');assert(parseFloat(getComputedStyle(document.getElementById('inspection-target')).fontSize)>=30,'large inspection target');assert(getComputedStyle(document.querySelector('.pepper-avatar')).animationName.includes('pepperSpeak'),'speaking animation');assert(getComputedStyle(document.querySelector('.pepper-avatar')).animationName.includes('pepperIdle'),'idle animation');
+ const originalTarget=document.querySelector('.target-display h1').textContent,originalBubble=document.querySelector('.speech-bubble').textContent;
+ const previousTime=document.getElementById('time').textContent;
+ document.getElementById('manual').click();
+ const panel=document.getElementById('rack'),rect=panel.getBoundingClientRect();
+ assert(rect.x===0&&rect.y===0&&Math.abs(rect.width-innerWidth)<2&&Math.abs(rect.height-innerHeight)<2,'full viewport inspection');
+ assert(document.getElementById('trial-interface').hidden,'trial interface hidden');
+ assert(!document.body.innerText.includes('Pepper')&&!document.body.innerText.includes('Section A')&&!document.body.innerText.includes(previousTime),'only inspection content visible');
+ assert(panel.querySelectorAll('button').length===2,'two back controls');
+ assert(getComputedStyle(image).objectFit==='contain','image not stretched');
+ await new Promise(r=>setTimeout(r,1100));assert(previousTime!==document.getElementById('time').textContent,'timer continues internally');
+ document.getElementById('back-bottom').click();
+ assert(document.querySelector('.target-display h1').textContent===originalTarget&&document.querySelector('.speech-bubble').textContent===originalBubble,'same trial restored');
+ document.querySelector('[data-choice]').click();assert(inspectionResult.manual_check_duration_ms>=1000,'elapsed inspection recorded');
+ assert(testErrors.length===0,'no uncaught JS errors');
+ document.body.innerHTML='<pre id="result">PASS: 1500 stimulus trials; manual/follow independence; cumulative timing; timeout; all 3 full flows; 3 trust checks; workload; save retry; fullscreen inspection; hidden UI; live timer; same trial restored; fixed mapping; stable trial-feedback-next-trial action positions; no JS errors.</pre>';
+}catch(e){document.body.innerHTML='<pre id="result"></pre>';document.getElementById('result').textContent='FAIL: '+e.stack;}});
+</script>

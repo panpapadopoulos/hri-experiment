@@ -1,0 +1,19 @@
+{% extends 'layouts/layout.html' %}
+{% block body %}
+<main class="study-container"><article class="study-card study-landing">
+<img class="university-wordmark" src="/static/images/purduelogo.svg" alt="Purdue University">
+<p class="course-info">Department of Computer Science<br><strong>CS 52580-001 HRI &middot; Fall 2026</strong></p>
+<h1>Building, Losing, and Recovering Trust in Human&ndash;Robot Interaction</h1>
+<p class="landing-intro">Welcome. In this study, you will work with a robot assistant to locate items in a storage rack and share your experience.</p>
+<p>You will first review the study information and decide whether you would like to participate.</p>
+{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
+<a id="consent-entry" class="btn" href="{{ server_location }}/consent?hitId={{ hitid|urlencode }}&amp;assignmentId={{ assignmentid|urlencode }}&amp;workerId={{ workerid }}">Continue to Consent</a>
+{% else %}
+<p class="muted">Accept the task on the recruitment platform to continue.</p>
+{% endif %}
+<footer class="study-team" aria-label="Study team">
+<div><strong>Steven Anyansi</strong><span>Graduate Student | M.S. in CS</span><span>Purdue University Northwest</span><a href="mailto:sanyansi@purdue.edu">sanyansi@purdue.edu</a></div>
+<div><strong>Panagiotis (Peter) Papadopoulos</strong><span>Graduate Student | M.S. in CS</span><span>Purdue University Northwest</span><a href="mailto:papadop@purdue.edu">papadop@purdue.edu</a></div>
+</footer>
+</article></main>
+{% endblock %}

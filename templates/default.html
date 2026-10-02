@@ -1,0 +1,9 @@
+{% extends 'layouts/layout.html' %}
+{% block body %}
+<main class="study-container"><article class="study-card completion-card">
+<img class="lab-logo" src="/static/images/pnw.png" alt="Purdue University Northwest">
+<h1>Classroom study</h1>
+<p class="completion-message">Start a separate session for each participant.</p>
+<form action="/new-participant" method="post"><button type="submit">Start New Participant</button></form>
+</article></main>
+{% endblock %}
