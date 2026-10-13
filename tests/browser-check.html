@@ -5,7 +5,7 @@
 <script>
 $(async function(){try{
  const assert=(v,m)=>{if(!v)throw Error(m);};
- HRI.validate();
+ HRI.validate();assert(HRI.config.trialTimeLimitMs===15000,'15 second trials');
  let previousActionTop=null;
  const form=document.getElementById('demographics');assert(!form.checkValidity(),'blank demographics blocked');
  form.elements.age.value='25';form.elements.gender.value='Prefer not to say';form.elements.robot_experience.value='None';assert(form.checkValidity(),'complete demographics accepted');
@@ -30,11 +30,11 @@ $(async function(){try{
  const t=HRI.makeTrial('test','errors_recovery',5);let result;
  HRI.runTrial(t,r=>result=r);now=100;document.getElementById('manual').click();now=600;document.getElementById('back').click();now=900;document.getElementById('manual').click();now=1200;document.getElementById('back').click();now=1500;document.querySelector('[data-choice="'+t.robot_suggestion+'"]').click();
  assert(result.manual_check_used&&result.followed_robot&&!result.participant_correct,'check and follow independent');assert(result.manual_check_duration_ms===800,'cumulative manual duration');assert(result.response_time_ms===1500,'response time');
- now=0;HRI.runTrial(t,r=>result=r);now=100;document.getElementById('manual').click();now=25001;document.getElementById('back').click();assert(result.timed_out&&result.participant_choice===null&&result.response_time_ms===null,'timeout while inspecting');
+ now=0;HRI.runTrial(t,r=>result=r);now=100;document.getElementById('manual').click();now=15001;document.getElementById('back').click();assert(result.timed_out&&result.participant_choice===null&&result.response_time_ms===null,'timeout while inspecting');
  delete performance.now;
  // Drive every page through all three between-subject conditions.
  for(const conditionName of HRI.config.conditions){
-  HRI.recoveryCondition=conditionName;records=[];completed=false;previousActionTop=null;HRI.begin();let guard=0;
+  HRI.recoveryCondition=conditionName;records=[];completed=false;previousActionTop=null;HRI.begin();assert(document.body.textContent.includes('About the study'),'study overview page');document.getElementById('continue').click();assert(document.body.textContent.includes('How to do the task')&&document.body.textContent.includes('15 seconds'),'separate clear task instructions');let guard=0;
   while(!completed&&guard++<250){
    assert(!/Phase [123]|Build Trust|Error Phase|Recovery Phase/.test(document.body.innerText),'no participant phase labels');
    const ratings=document.getElementById('ratings'),feedback=document.getElementById('feedback'),choice=document.querySelector('[data-choice]'),button=document.getElementById('continue');

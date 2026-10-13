@@ -1,3 +1,12 @@
+# Current introduction and timing
+
+Each practice and main trial allows 15 seconds, including Manual Check.
+The entry flow is landing, consent, required demographics, About the Study,
+How to Do the Task, then practice. Consent, study overview, and task instructions
+are separate pages. Instructions explain rack rows, final answers, manual checking,
+and timeout behavior. Existing trial counts, errors, conditions and trust timing
+are unchanged. This supersedes older 25-second/instruction descriptions below.
+
 # JASP analysis export
 
 ```bash

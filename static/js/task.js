@@ -52,18 +52,21 @@ HRI.finish=function(){
 };
 HRI.begin=function(){
  const c=HRI.config;
- HRI.continuePage('Your task',`<p class="muted">Locate the item. Consider the recommendation. Make your decision.</p>
- <div class="task-example" aria-label="Target, then robot recommendation, then choose A, B, C or D or use Manual Check">
- <div class="example-step"><strong>Target</strong>Sensor</div><span class="example-arrow" aria-hidden="true">&rarr;</span>
- <div class="example-step"><strong>Robot recommendation</strong>Section A</div><span class="example-arrow" aria-hidden="true">&rarr;</span>
- <div class="example-step"><strong>Your decision</strong>A / B / C / D<br>or Manual Check</div></div>
- <div class="instruction-grid">
- <section><h2>Your Task</h2><p>Locate a target item in one of four rack rows: <strong>A, B, C, or D</strong>, from top to bottom. Bin labels begin with their row letter (for example, A1).</p></section>
- <section><h2>Robot Assistance</h2><p>The robot offers a recommendation, such as &ldquo;I believe the target item is in Section B.&rdquo;</p></section>
- <section><h2>Your Decision</h2><p>Choose A, B, C, or D directly, or use <strong>Manual Check</strong> first. You always make the final decision.</p></section>
- <section><h2>Manual Check</h2><p>Inspect one image of the complete rack with all four sections visible. Select <strong>Back</strong>, then choose A, B, C, or D.</p></section></div>
- <p class="robot-message">You have <strong>${c.trialTimeLimitMs/1000} seconds</strong> per trial. The timer continues during Manual Check. If time runs out, the trial ends without an answer.</p>
- <p class="muted">Keep this page open; refreshing does not resume an unfinished session.</p>`,()=>{
+ HRI.continuePage('About the study',`<p>This study explores how people make decisions while working with a robot assistant named Pepper.</p>
+ <div class="instruction-grid"><section><h2>What you will do</h2><p>Locate items in a storage rack and choose their row. Pepper will offer a suggestion, but you make every final decision.</p></section>
+ <section><h2>What to expect</h2><p>You will complete ${c.practiceTrials} practice trials and ${c.buildTrustTrials+c.errorPhaseTrials+c.recoveryTrials} main trials, with brief questions about your experience.</p></section></div>
+ <p>On the next page, learn exactly how to inspect the rack and submit an answer. These introduction pages are not timed.</p>`,HRI.instructions);
+ document.getElementById('continue').textContent='View Task Instructions';
+};
+HRI.instructions=function(){
+ const c=HRI.config;
+ HRI.continuePage('How to do the task',`<div class="task-guide">
+ <section><h2>1. Read the item name</h2><p>The large <strong>ITEM TO FIND</strong> heading tells you what to locate, for example <strong>Sensor</strong>.</p></section>
+ <section><h2>2. Consider Pepper&rsquo;s suggestion</h2><p>Pepper suggests a row, such as &ldquo;I think it is in Section A.&rdquo; This is advice, not your final answer.</p></section>
+ <section><h2>3. Choose directly or inspect the rack</h2><p>If ready, click <strong>Section A, B, C, or D</strong>. Otherwise, click <strong>Manual Check</strong> to see the entire rack.</p></section>
+ <section><h2>4. Read the row letters, then answer</h2><p>Rows run from <strong>A at the top</strong> to <strong>D at the bottom</strong>. A1&ndash;A4 are all in Section A; B1&ndash;B4 are in Section B, and so on. Find the item label, click either <strong>Back</strong> button, then choose its row. Do not click the rack image to answer.</p></section>
+ </div><p class="instruction-timing"><strong>${c.trialTimeLimitMs/1000} seconds per trial.</strong> The countdown starts when the item appears and continues during Manual Check. A section click is final. If time runs out, the trial ends without an answer.</p>
+ <p class="muted">Read the correct-answer feedback, then click Continue. You may check and still agree with Pepper. Start with ${c.practiceTrials} practice trials below.</p>`,()=>{
   psiTurk.finishInstructions();
   const phase3=()=>HRI.phase('continued_interaction',c.recoveryTrials,c.buildTrustTrials+c.errorPhaseTrials+1,()=>HRI.trust('end_phase_3',HRI.finish));
   const phase2=()=>HRI.phase('errors_recovery',c.errorPhaseTrials,c.buildTrustTrials+1,phase3);
@@ -73,6 +76,8 @@ HRI.begin=function(){
    document.getElementById('continue').textContent='Begin Task';
   });
  });
+ document.querySelector('.task-layout').classList.add('instruction-page');
+ document.getElementById('continue').textContent='Start Practice';
 };
 $(function(){try{
  HRI.validate();if(!Number.isInteger(condition)||!HRI.config.conditions[condition])throw Error('Expected condition 0, 1 or 2. Start a new debug participant.');

@@ -3,7 +3,7 @@ window.HRI = {};
 HRI.config = {
  practiceTrials:2, buildTrustTrials:4, errorPhaseTrials:7, recoveryTrials:4,
  // One-based main-task numbers, EXCLUDING practice. Errors must be in Phase 2.
- errorTrials:[5,8,11], trialTimeLimitMs:25000,
+ errorTrials:[5,8,11], trialTimeLimitMs:15000,
  // Main-task checkpoint: two correct trials after the first scheduled error.
  earlyRecoveryTrustTrial:7,
  conditions:["acknowledgment","apology","apology_explanation"],
