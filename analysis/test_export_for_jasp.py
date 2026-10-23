@@ -26,6 +26,11 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(out['trust_wide.csv'][0]['trust_baseline'],2.5);self.assertNotIn('trust_early_recovery',out['trust_wide.csv'][0]);self.assertEqual(out['trust_long.csv'][-1]['after_main_trial'],3)
         for row in out['trial_data.csv']:
             for field in ['practice','robot_correct','manual_check_used','followed_robot','participant_correct','timed_out']:self.assertIn(row[field],[0,1]);self.assertIs(type(row[field]),int)
+    def test_current_trust_schema(self):
+        self.assertEqual(e.POINTS, ['baseline', 'early_recovery', 'final'])
+        self.assertEqual(len(e.WIDE), 17)  # IDs, three means and twelve item scores.
+        self.assertFalse(any('post_' in field for field in e.WIDE))
+
     def test_empty_session(self):
         p=fixture();p['datastring']=None;out=e.transform([p]);self.assertEqual(out['participant_data.csv'][0]['completed'],0);self.assertIsNone(out['participant_data.csv'][0]['tlx_mean']);self.assertEqual(out['trial_data.csv'],[])
     def test_reject_duplicates_and_conditions(self):
@@ -46,8 +51,11 @@ class ExportTests(unittest.TestCase):
                 db.execute('CREATE TABLE assignments (uniqueid TEXT,workerid TEXT,cond INTEGER,status INTEGER,datastring TEXT)')
                 db.execute('INSERT INTO assignments VALUES (?,?,?,?,?)',(p['uniqueid'],'debugClassroom_test',p['cond'],p['status'],p['datastring']))
                 db.execute('INSERT INTO assignments VALUES (?,?,?,?,?)',('old_debug','debugTest',0,3,p['datastring']))
+                unfinished=alter(fixture(),lambda rows:rows.pop())
+                db.execute('INSERT INTO assignments VALUES (?,?,?,?,?)',('unfinished','debugClassroom_unfinished',0,1,unfinished['datastring']))
             before=dbpath.read_bytes();out=e.export(dbpath,root/'out');self.assertEqual(before,dbpath.read_bytes());self.assertEqual(len(out['participant_data.csv']),1)
             for name,fields in e.SCHEMAS.items():
+                self.assertTrue(all(row['participant_id']==p['uniqueid'] for row in out[name]))
                 with (root/'out'/name).open(encoding='utf-8-sig',newline='') as f:
                     reader=csv.DictReader(f);self.assertEqual(reader.fieldnames,fields)
                     for row in reader:

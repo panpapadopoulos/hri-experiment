@@ -1,6 +1,6 @@
 <!doctype html><meta charset="utf-8"><title>HRI checks</title><link rel="stylesheet" href="/static/css/style.css"><script>window.testErrors=[];window.addEventListener("error",e=>testErrors.push(e.message));window.addEventListener("unhandledrejection",e=>testErrors.push(String(e.reason)));</script>
 <script src="/static/lib/jquery-3.4.1.min.js"></script>
-<script>var uniqueId='debugTests',condition=0,adServerLoc='/complete',mode='debug',codeversion='test';var records=[],completed=false;function PsiTurk(){this.recordTrialData=r=>records.push(r);this.getTrialData=()=>[];this.saveData=c=>c.success();this.finishInstructions=()=>{};this.completeHIT=()=>{completed=true;};}</script>
+<script>var uniqueId='debugTests',condition=0,adServerLoc='/complete',mode='debug',codeversion='test';var records=[],completed=false,saveCalls=0;function PsiTurk(){this.recordTrialData=r=>records.push(r);this.getTrialData=()=>[];this.saveData=c=>{saveCalls++;c.success();};this.finishInstructions=()=>{};this.completeHIT=()=>{completed=true;};}</script>
 <script src="/static/js/settings.js"></script><script src="/static/js/stimuli.js"></script><script src="/static/js/questionnaires.js"></script><script src="/static/js/trial.js"></script><script src="/static/js/task.js"></script>
 <script>
 $(async function(){try{
@@ -34,11 +34,12 @@ $(async function(){try{
  delete performance.now;
  // Drive every page through all three between-subject conditions.
  for(const conditionName of HRI.config.conditions){
-  HRI.recoveryCondition=conditionName;records=[];completed=false;previousActionTop=null;HRI.begin();assert(document.body.textContent.includes('About the study'),'study overview page');document.getElementById('continue').click();assert(document.body.textContent.includes('How to do the task')&&document.body.textContent.includes('15 seconds'),'separate clear task instructions');let guard=0;
+  HRI.recoveryCondition=conditionName;records=[];completed=false;saveCalls=0;previousActionTop=null;HRI.begin();assert(document.body.textContent.includes('About the study'),'study overview page');document.getElementById('continue').click();assert(document.body.textContent.includes('Task Overview')&&document.body.textContent.includes('15 seconds'),'separate clear task instructions');let guard=0;
   while(!completed&&guard++<250){
    assert(!/Phase [123]|Build Trust|Error Phase|Recovery Phase/.test(document.body.innerText),'no participant phase labels');
    const ratings=document.getElementById('ratings'),feedback=document.getElementById('feedback'),choice=document.querySelector('[data-choice]'),button=document.getElementById('continue');
-   if(ratings){ratings.querySelectorAll('input[value="4"]').forEach(x=>x.checked=true);ratings.dispatchEvent(new Event('submit',{cancelable:true}));}
+   if(document.getElementById('submit-responses')){assert(saveCalls===0,'no responses saved before Submit');document.getElementById('submit-responses').click();assert(saveCalls===1,'one final save');}
+   else if(ratings){ratings.querySelectorAll('input[value="4"]').forEach(x=>x.checked=true);ratings.dispatchEvent(new Event('submit',{cancelable:true}));}
    else if(feedback){feedback.dispatchEvent(new Event('submit',{cancelable:true}));}
    else if(choice){assert(document.querySelector('.pepper-message'),'Pepper recommendation');const trials=records.filter(r=>r.record_type==='trial'),phase=trials.length<2?'practice':trials.length<6?'build_trust':trials.length<13?'errors_recovery':'continued_interaction',number=trials.length<2?trials.length+1:trials.length-1;const t=HRI.makeTrial(uniqueId,phase,number);const answer=trials.length%2===0?t.correct_section:HRI.sections.find(s=>s!==t.correct_section);const actionRect=document.querySelector('.task-action-area').getBoundingClientRect();if(previousActionTop!==null)assert(Math.abs(actionRect.top-previousActionTop)<2,'next trial action area stays fixed');previousActionTop=actionRect.top;document.querySelector('[data-choice="'+answer+'"]').click();}
    else if(button){
@@ -50,7 +51,7 @@ $(async function(){try{
   const trustTrialCounts=records.filter(r=>r.record_type==='trust').map(r=>records.slice(0,records.indexOf(r)).filter(t=>t.record_type==='trial'&&t.phase!=='practice').length);assert(trustTrialCounts.join(',')==='0,7,15','exact trust timing');
   const trust=records.filter(r=>r.record_type==='trust');assert(trust.length===3,'three trust checks');assert(trust.map(r=>r.checkpoint).join(',')==='baseline,early_recovery,end_phase_3','trust order');assert(records.some(r=>r.record_type==='workload'&&r.performance===4&&r.frustration===4),'workload');
  }
- let retries=0;psiTurk.saveData=c=>{if(retries++===0)c.error();else c.success();};let saved=false;HRI.save(()=>saved=true);document.getElementById('retry').click();assert(saved,'save retry');
+ let retries=0;psiTurk.saveData=c=>{if(retries++===0)c.error();else c.success();};let saved=false;HRI.submitData(()=>saved=true);document.getElementById('retry').click();assert(saved,'save retry');
 
  // Verify actual full-screen inspection and live elapsed time.
  let inspectionResult;

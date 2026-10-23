@@ -8,8 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONDITIONS = ['acknowledgment', 'apology', 'apology_explanation']
-POINTS = ['baseline', 'post_build', 'post_early_error', 'early_recovery', 'post_error_phase', 'final']
-CHECKPOINTS = {'baseline':'baseline', 'after_phase_1':'post_build', 'after_early_error':'post_early_error', 'early_recovery':'early_recovery', 'after_phase_2':'post_error_phase', 'end_phase_3':'final'}
+POINTS = ['baseline', 'early_recovery', 'final']
+CHECKPOINTS = {'baseline':'baseline', 'early_recovery':'early_recovery', 'end_phase_3':'final'}
 PHASES = {'practice':'practice', 'build_trust':'build_trust', 'errors_recovery':'error_recovery', 'error_recovery':'error_recovery', 'continued_interaction':'continued_interaction'}
 TLX = dict(zip(['mental_demand','physical_demand','temporal_demand','performance','effort','frustration'], ['tlx_mental','tlx_physical','tlx_temporal','tlx_performance','tlx_effort','tlx_frustration']))
 BASE = ['participant_id','recovery_condition']
@@ -145,6 +145,8 @@ def export(database, output):
         db.row_factory=sqlite3.Row
         participants=db.execute("SELECT uniqueid,cond,status,datastring FROM assignments WHERE instr(workerid, ?) = 1 ORDER BY uniqueid", ('debugClassroom_',)).fetchall()
     result=transform(participants)  # Validate everything before writing any CSV.
+    submitted_ids = {row['participant_id'] for row in result['participant_data.csv'] if row['completed'] == 1}
+    result = {name: [row for row in rows if row['participant_id'] in submitted_ids] for name, rows in result.items()}
     output.mkdir(parents=True,exist_ok=True)
     for filename,fields in SCHEMAS.items():
         with (output/filename).open('w',newline='',encoding='utf-8-sig') as stream:
@@ -158,4 +160,4 @@ if __name__=='__main__':
     args=parser.parse_args()
     result=export(args.database,args.output)
     for name,rows in result.items():print(f'{name}: {len(rows)} rows')
-    print(f'CSV files: {args.output.resolve()} (classroom sessions only; includes incomplete sessions)')
+    print(f'CSV files: {args.output.resolve()} (submitted classroom participants only)')

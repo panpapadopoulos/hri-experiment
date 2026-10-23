@@ -156,3 +156,23 @@ body.inspecting { overflow:hidden; }
 .inspection-actions {flex-shrink:0;display:flex;justify-content:flex-start;padding-top:8px;}.inspection-actions button {margin:0;min-width:110px;}
 
 .task-guide {display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;margin:8px 0 16px;}.task-guide h2 {font-size:18px;margin-bottom:6px;}.task-guide p {margin:0;font-size:15px;}.instruction-timing {padding:12px 16px;background:#f0f5f8;border-radius:8px;font-size:15px;}.instruction-page {grid-template-rows:auto 80px 0;}.instruction-page .task-action-area {min-height:80px;}.instruction-page .task-footer {height:0;min-height:0;}@media(max-width:700px){.task-guide {grid-template-columns:1fr;}}
+
+
+.video-page {--video-ratio:1.777778;width:min(calc(100vw - 32px),calc((100dvh - 116px) * var(--video-ratio)));margin:16px auto;text-align:center;}.video-page video {display:block;width:100%;height:auto;max-width:100%;border:0;border-radius:8px;background:transparent;}.video-actions {display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;}.video-actions button,.video-actions .btn {margin:0;}.video-page #video-status {margin-top:10px;}
+
+/* Illustrated task overview; examples are deliberately non-interactive. */
+.overview-card {padding:24px!important;}.overview-card .instruction-page {max-width:none;grid-template-rows:auto 60px 0;}.overview-card .task-content {justify-content:flex-start;}
+.overview-eyebrow {text-align:center;background:#f0f4f8;color:#687d9e;letter-spacing:3px;font-weight:700;font-size:12px;padding:12px 0 0;margin:0;border-radius:12px 12px 0 0;}
+.overview-card .task-content>h1 {align-self:stretch;background:#f0f4f8;font-size:38px;font-weight:800;padding:6px 12px 14px;margin:0 0 12px;border-radius:0 0 12px 12px;}
+.overview-lead {text-align:center;font-size:17px;line-height:1.45;margin-bottom:16px;}
+.overview-steps {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.overview-step {background:#f5f8fa;border-radius:12px;padding:16px;display:flex;flex-direction:column;min-width:0;}
+.overview-step header {display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}.step-number {display:flex;align-items:center;justify-content:center;flex:0 0 34px;height:34px;border-radius:50%;background:#dce9ff;color:#245bc8;font-size:24px;font-weight:750;}
+.overview-step h2 {font-size:17px;line-height:1.25;margin:3px 0 0;}.overview-step h2 small {font-size:14px;color:var(--muted);}.overview-step>p {font-size:14px;line-height:1.45;margin:0 0 14px;}
+.instruction-example {background:#fff;padding:12px;border-radius:10px;margin-top:auto;}.example-target {text-align:center;background:#f0f4f8;border-radius:6px;padding:6px;}.example-target small {display:block;font-size:9px;letter-spacing:2px;color:#637b9d;}.example-target strong {display:block;font-size:22px;line-height:1.2;}
+.example-pepper {display:flex;align-items:center;gap:8px;margin:10px 0;}.example-pepper img {width:70px;height:90px;object-fit:contain;}.example-pepper p {font-size:12px;line-height:1.4;background:#f0f4f8;border-radius:8px;padding:10px;margin:0;}
+.example-caption {font-size:11px;line-height:1.4;text-align:center;color:var(--muted);margin:10px 0 0;}.example-choices {display:grid;grid-template-columns:1fr 1fr;gap:8px;}.example-choices span {border:1px solid #cbd8e7;border-radius:6px;padding:12px 6px;text-align:center;font-size:11px;}.example-choices b {font-size:22px;margin-left:5px;}
+.example-manual {text-align:center;border:1px solid #70a3ef;color:#245da0;background:#f2f7ff;border-radius:6px;padding:8px;margin:12px 16px 0;font-size:13px;font-weight:600;}.rack-example>img {width:100%;height:auto;display:block;margin-top:8px;}.example-back {font-size:12px;margin-top:6px;color:var(--accent);}
+.overview-notice {display:flex;gap:12px;align-items:center;background:#edf4ff;border:1px solid #d4e3ff;border-radius:10px;padding:12px 16px;margin-top:14px;color:#234f94;}.overview-notice>span {display:flex;align-items:center;justify-content:center;border-radius:50%;background:#326ce4;color:white;width:24px;height:24px;flex-shrink:0;font-weight:700;}.overview-notice p {font-size:13px;line-height:1.45;margin:0;}
+.overview-footnote {font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center;}.overview-card .task-action-area {min-height:60px;align-items:flex-end;}.overview-card #continue {background:#2869d8;border-color:#2869d8;min-height:44px;}
+@media(max-width:800px){.overview-steps {grid-template-columns:1fr;}.overview-card .task-content>h1 {font-size:30px;}.instruction-example {max-width:350px;width:100%;align-self:center;}.overview-card .task-action-area {align-items:center;}}

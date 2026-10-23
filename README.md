@@ -1,3 +1,14 @@
+# Response submission
+
+Responses are kept in page memory until the participant presses Submit on the
+final thank-you screen, after debrief. No intermediate response saves occur.
+Refreshing or closing before submission loses unsaved responses. A failed final
+save can be retried without appending another completion record. The saved
+confirmation page and next-participant button follow successful submission.
+PsiTurk still creates a participant/session row at entry and updates lifecycle
+status when practice begins; these are metadata, not submitted study responses.
+Existing data is unchanged. This supersedes earlier incremental-saving notes.
+
 # Current introduction and timing
 
 Each practice and main trial allows 15 seconds, including Manual Check.
@@ -241,3 +252,10 @@ with a correct recommendation, with a neutral statement of the correct section.
 The assigned error recovery wording and all trial data fields remain unchanged.
 Browser checks passed for required fields, pose conditions, timeout exclusion,
 all three full flows, timing and saving mocks. All five image URLs returned 200.
+
+
+## Researcher dashboard
+
+With the server running, open http://localhost:22363/researcher on the classroom computer. This local-only page shows submitted and unsubmitted classroom sessions, test-session counts, condition balance, and paginated previews of all five analysis tables. Generate / refresh exports before downloading: CSV snapshots are stored in `/home/panos/hri-experiment/analysis/exports`. All five exports include only submitted classroom participants (completed = 1); unfinished sessions remain included in dashboard counts, but are excluded from data previews.
+
+Reset requires typing RESET and accepting a confirmation. It deletes all rows from the assignments table (including tests) and the five generated JASP CSVs, without a backup. Close participant tabs and reset only between sessions. Other files and downloaded copies are not deleted. The dashboard is intended for a trusted, shared classroom computer, not an authenticated remote administration service.

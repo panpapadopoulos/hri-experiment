@@ -6,7 +6,7 @@ Run `~/psiturk_env/bin/python analysis/export_for_jasp.py` from the project. Out
 
 CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. No JSON, free-text comments, exact age, email, student ID, IP, or names are exported. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
 
-Current trust occasions are baseline (after practice), early_recovery (after main trial 7), final (after trial 15). Wide files also retain legacy columns post_build, post_early_error and post_error_phase, blank for current sessions. Immediate-error and delayed-recovery occasions must not be pooled as equivalent. after_main_trial documents actual timing. Item wording and scoring remain provisional.
+Current trust occasions are baseline (after practice), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Item wording and scoring remain provisional.
 
 Behavior summaries exclude practice. Rates include timeouts as non-following/incorrect according to raw coding. Mean RT excludes missing/timeout responses. Mean inspection time includes only used checks. Empty groups give counts 0 and blank means/rates. Incomplete sessions summarize observed trials only. No imputation or zero-filling of missing questionnaires.
 
@@ -71,7 +71,7 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 |---|---|---|
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| measurement_point | Categorical | baseline, post_build, post_early_error, early_recovery, post_error_phase, final. Legacy occasions stay distinct; no fabricated measurements. |
+| measurement_point | Categorical | baseline, early_recovery, final. |
 | after_main_trial | Integer | Most recent main trial before the trust record in raw sequence; 0 for baseline after practice. |
 | trust_q1 | Integer 1-7 | I trust the robot recommendations. 1 strongly disagree, 7 strongly agree; provisional item. |
 | trust_q2 | Integer 1-7 | I believe the robot is reliable. 1 strongly disagree, 7 strongly agree; provisional item. |
@@ -86,31 +86,16 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
 | trust_baseline | Numeric 1-7 | Four-item mean at baseline; blank if occasion or any item missing. |
-| trust_post_build | Numeric 1-7 | Four-item mean at post_build; blank if occasion or any item missing. |
-| trust_post_early_error | Numeric 1-7 | Four-item mean at post_early_error; blank if occasion or any item missing. |
 | trust_early_recovery | Numeric 1-7 | Four-item mean at early_recovery; blank if occasion or any item missing. |
-| trust_post_error_phase | Numeric 1-7 | Four-item mean at post_error_phase; blank if occasion or any item missing. |
 | trust_final | Numeric 1-7 | Four-item mean at final; blank if occasion or any item missing. |
 | trust_q1_baseline | Integer 1-7 | Trust item 1 at baseline; blank if unobserved. |
 | trust_q2_baseline | Integer 1-7 | Trust item 2 at baseline; blank if unobserved. |
 | trust_q3_baseline | Integer 1-7 | Trust item 3 at baseline; blank if unobserved. |
 | trust_q4_baseline | Integer 1-7 | Trust item 4 at baseline; blank if unobserved. |
-| trust_q1_post_build | Integer 1-7 | Trust item 1 at post_build; blank if unobserved. |
-| trust_q2_post_build | Integer 1-7 | Trust item 2 at post_build; blank if unobserved. |
-| trust_q3_post_build | Integer 1-7 | Trust item 3 at post_build; blank if unobserved. |
-| trust_q4_post_build | Integer 1-7 | Trust item 4 at post_build; blank if unobserved. |
-| trust_q1_post_early_error | Integer 1-7 | Trust item 1 at post_early_error; blank if unobserved. |
-| trust_q2_post_early_error | Integer 1-7 | Trust item 2 at post_early_error; blank if unobserved. |
-| trust_q3_post_early_error | Integer 1-7 | Trust item 3 at post_early_error; blank if unobserved. |
-| trust_q4_post_early_error | Integer 1-7 | Trust item 4 at post_early_error; blank if unobserved. |
 | trust_q1_early_recovery | Integer 1-7 | Trust item 1 at early_recovery; blank if unobserved. |
 | trust_q2_early_recovery | Integer 1-7 | Trust item 2 at early_recovery; blank if unobserved. |
 | trust_q3_early_recovery | Integer 1-7 | Trust item 3 at early_recovery; blank if unobserved. |
 | trust_q4_early_recovery | Integer 1-7 | Trust item 4 at early_recovery; blank if unobserved. |
-| trust_q1_post_error_phase | Integer 1-7 | Trust item 1 at post_error_phase; blank if unobserved. |
-| trust_q2_post_error_phase | Integer 1-7 | Trust item 2 at post_error_phase; blank if unobserved. |
-| trust_q3_post_error_phase | Integer 1-7 | Trust item 3 at post_error_phase; blank if unobserved. |
-| trust_q4_post_error_phase | Integer 1-7 | Trust item 4 at post_error_phase; blank if unobserved. |
 | trust_q1_final | Integer 1-7 | Trust item 1 at final; blank if unobserved. |
 | trust_q2_final | Integer 1-7 | Trust item 2 at final; blank if unobserved. |
 | trust_q3_final | Integer 1-7 | Trust item 3 at final; blank if unobserved. |

@@ -1,0 +1,29 @@
+{% extends 'layouts/layout.html' %}
+{% block body %}
+<main class="video-page">
+<video id="pepper-video" controls autoplay playsinline preload="metadata" aria-label="Meet Pepper introduction">
+<source src="/static/videos/Pepper.mp4" type="video/mp4">
+Your browser cannot play this video. Use Skip to Consent below.
+</video>
+<div class="video-actions">
+<button id="replay-video" class="secondary" type="button">Replay</button>
+<a id="consent-entry" class="btn" href="{{ consent_url }}">Skip to Consent</a>
+</div>
+<p id="video-status" class="muted" role="status" hidden></p>
+</main>
+<script>
+(function(){
+ const video=document.getElementById('pepper-video'),status=document.getElementById('video-status');
+ function play(){const promise=video.play();if(promise)promise.catch(function(){status.hidden=false;status.textContent='Press Play on the video to begin, or skip to consent.';});}
+ video.addEventListener('loadedmetadata',function(){
+   // Constrain width by both viewport dimensions, with natural video height.
+   document.querySelector('.video-page').style.setProperty('--video-ratio',video.videoWidth/video.videoHeight);
+ });
+ video.addEventListener('playing',function(){status.hidden=true;});
+ document.getElementById('replay-video').onclick=function(){video.currentTime=0;play();};
+ document.getElementById('consent-entry').onclick=function(){video.pause();};
+ video.querySelector('source').onerror=function(){status.hidden=false;status.textContent='The video could not load. You can skip to consent.';};
+ play();
+})();
+</script>
+{% endblock %}
