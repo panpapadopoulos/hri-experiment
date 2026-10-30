@@ -1,3 +1,13 @@
+## Current protocol (October 29, 2026)
+
+Flow: landing ? consent ? required demographics ? condition-specific video ? paged instructions with Previous ? 15 main trials (no practice) ? final questionnaires ? Submit. Videos are Acknowledge.mp4, Apology.mp4, and ApologyExplanation.mp4. Instruction examples use the corresponding supplied recovery screenshot. Exposing the assigned recovery style before the task is part of this protocol, so the pre-error measure is not a naive baseline.
+
+Each trial has 12 seconds. A visible 10-minute overall clock starts at Begin Task and continues through manual checks, feedback and interim trust questions. It stops after trial 15 feedback or at the overall deadline, whichever comes first. At expiry an active trial becomes a timeout; unfinished interim questionnaire answers are not recorded. Final trust, workload and submission remain available outside the timer. Data still saves only on final Submit.
+
+Trust measurements: pre_error after trial 4, early_recovery after trial 7, final after trial 15 or overall expiry. Errors remain trials 5, 8 and 11. Protocol/code version is 0.2.0. The old after-practice baseline is not relabeled as pre-error trust; existing end-of-task scores retain their final label; filter code_version when analyzing mixed collections.
+
+Age is required (18?80) and exported as exact numeric age. Robot/PsiTurk experience use four radio choices. Other gender requires a self-description. Continue buttons are disabled until required fields are valid. Questionnaire items and instructions are paged to avoid scrolling; compact layouts fit the viewport with scaling as a fallback for unusually small windows. The researcher dashboard retains its scrollable data tables.
+
 # Response submission
 
 Responses are kept in page memory until the participant presses Submit on the

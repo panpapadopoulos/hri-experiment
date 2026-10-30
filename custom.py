@@ -20,7 +20,7 @@ def introduction():
     if any(not request.args.get(key) for key in required):
         abort(400)
     consent_url = url_for('give_consent', **{key: request.args[key] for key in required})
-    return render_template('introduction.html', consent_url=consent_url)
+    return redirect(consent_url, code=303)  # Video now follows consent inside /exp.
 
 # Register local researcher routes alongside the experiment routes.
 from researcher import researcher

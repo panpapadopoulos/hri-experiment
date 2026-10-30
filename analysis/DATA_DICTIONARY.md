@@ -2,11 +2,11 @@
 
 ## Export and missing-data rules
 
-Run `~/psiturk_env/bin/python analysis/export_for_jasp.py` from the project. Output: `analysis/exports/`. Classroom IDs only (workerid starts with debugClassroom_). Both complete and incomplete sessions are exported. Join participant_data.completed and main_trials_complete to filter. Existing raw records and earlier CSV exports are never modified; these five derived CSVs are regenerated.
+Run `~/psiturk_env/bin/python analysis/export_for_jasp.py` from the project. Output: `analysis/exports/`. Classroom IDs only (workerid starts with debugClassroom_). Only submitted sessions are exported. Use main_trials_complete to identify whether all 15 main trials were completed before the overall timeout. Existing raw records and earlier CSV exports are never modified; these five derived CSVs are regenerated.
 
-CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. No JSON, free-text comments, exact age, email, student ID, IP, or names are exported. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
+CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. Exact numeric age and the Other gender self-description are exported. No JSON, feedback comments, email, student ID or IP are exported. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
 
-Current trust occasions are baseline (after practice), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Item wording and scoring remain provisional.
+Current trust occasions are pre_error (after main trial 4), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Item wording and scoring remain provisional.
 
 Behavior summaries exclude practice. Rates include timeouts as non-following/incorrect according to raw coding. Mean RT excludes missing/timeout responses. Mean inspection time includes only used checks. Empty groups give counts 0 and blank means/rates. Incomplete sessions summarize observed trials only. No imputation or zero-filling of missing questionnaires.
 
@@ -43,8 +43,9 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 |---|---|---|
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| age_range | Categorical | Derived from recorded age: 18_24, 25_34, 35_44, 45_54, 55_64, 65_plus. Exact age omitted. |
+| age | Integer | Exact age in years. New sessions accept 18?80. |
 | gender | Categorical | male, female, non_binary, other, prefer_not_to_say; unrecognized legacy free-text is mapped to other. |
+| gender_other | Text | Self-description supplied when gender is Other; blank otherwise. |
 | robot_experience | Categorical | no_experience, a_little, moderate, extensive, prefer_not_to_say. Blank if not recorded. |
 | hri_experience | Categorical | Not currently collected; blank. No inference from robot_experience. |
 | ai_familiarity | Categorical | Not currently collected; blank. |
@@ -71,8 +72,8 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 |---|---|---|
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| measurement_point | Categorical | baseline, early_recovery, final. |
-| after_main_trial | Integer | Most recent main trial before the trust record in raw sequence; 0 for baseline after practice. |
+| measurement_point | Categorical | pre_error, early_recovery, final. |
+| after_main_trial | Integer | Most recent main trial before the trust record in raw sequence; 0 for pre_error after practice. |
 | trust_q1 | Integer 1-7 | I trust the robot recommendations. 1 strongly disagree, 7 strongly agree; provisional item. |
 | trust_q2 | Integer 1-7 | I believe the robot is reliable. 1 strongly disagree, 7 strongly agree; provisional item. |
 | trust_q3 | Integer 1-7 | I feel confident relying on the robot. 1 strongly disagree, 7 strongly agree; provisional item. |
@@ -85,13 +86,13 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 |---|---|---|
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| trust_baseline | Numeric 1-7 | Four-item mean at baseline; blank if occasion or any item missing. |
+| trust_pre_error | Numeric 1-7 | Four-item mean at pre_error; blank if occasion or any item missing. |
 | trust_early_recovery | Numeric 1-7 | Four-item mean at early_recovery; blank if occasion or any item missing. |
 | trust_final | Numeric 1-7 | Four-item mean at final; blank if occasion or any item missing. |
-| trust_q1_baseline | Integer 1-7 | Trust item 1 at baseline; blank if unobserved. |
-| trust_q2_baseline | Integer 1-7 | Trust item 2 at baseline; blank if unobserved. |
-| trust_q3_baseline | Integer 1-7 | Trust item 3 at baseline; blank if unobserved. |
-| trust_q4_baseline | Integer 1-7 | Trust item 4 at baseline; blank if unobserved. |
+| trust_q1_pre_error | Integer 1-7 | Trust item 1 at pre_error; blank if unobserved. |
+| trust_q2_pre_error | Integer 1-7 | Trust item 2 at pre_error; blank if unobserved. |
+| trust_q3_pre_error | Integer 1-7 | Trust item 3 at pre_error; blank if unobserved. |
+| trust_q4_pre_error | Integer 1-7 | Trust item 4 at pre_error; blank if unobserved. |
 | trust_q1_early_recovery | Integer 1-7 | Trust item 1 at early_recovery; blank if unobserved. |
 | trust_q2_early_recovery | Integer 1-7 | Trust item 2 at early_recovery; blank if unobserved. |
 | trust_q3_early_recovery | Integer 1-7 | Trust item 3 at early_recovery; blank if unobserved. |
@@ -141,3 +142,5 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 | manual_check_after_errors | Numeric proportion 0-1 | Mean manual_check_used in after_errors window; see window definitions below. |
 | rt_after_errors | Numeric milliseconds | Mean nonmissing response_time_ms (timeouts excluded) in after_errors window; see window definitions below. |
 | accuracy_after_errors | Numeric proportion 0-1 | Mean participant_correct in after_errors window; see window definitions below. |
+
+Current protocol: exact numeric age (18?80 for new sessions), gender_other contains the required self-description when Other is selected. psiturk_experience and robot_experience use None, A little, Moderate, Extensive (normalized in exports). No practice trials. Main trials last 12 seconds, with a 600-second overall task limit. A timeout may produce fewer than 15 trials; inspect main_trials_complete. Old after-practice baseline records are omitted rather than relabeled as pre-error trust; end_phase_3 still maps to final.

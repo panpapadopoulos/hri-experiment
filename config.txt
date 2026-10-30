@@ -261,7 +261,7 @@ threads = 1
 # on this setting -- it will do balanced random assignment within a given codeversion.
 # Can be any string value -- recommended to use semantic versioning for analysis
 # sanity.
-experiment_code_version = 0.1.0
+experiment_code_version = 0.2.0
 
 # The number of possible treatments. Used for random balanced assignment.
 num_conds = 3

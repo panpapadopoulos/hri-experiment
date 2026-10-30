@@ -9,11 +9,11 @@ from pathlib import Path
 import export_for_jasp as e
 
 def fixture():
-    records=[{'record_type':'session','settings':{'buildTrustTrials':1,'errorPhaseTrials':1,'recoveryTrials':1,'errorTrials':[2]},'code_version':'test'}, {'record_type':'demographics','age':'25','gender':'Female','robot_experience':'None'}, {'record_type':'trust','checkpoint':'baseline',**{f'trust_{i}':str(i) for i in range(1,5)}}]
+    records=[{'record_type':'session','settings':{'buildTrustTrials':1,'errorPhaseTrials':1,'recoveryTrials':1,'errorTrials':[2]},'code_version':'test'}, {'record_type':'demographics','age':'25','gender':'Female','robot_experience':'None'}, {'record_type':'trust','checkpoint':'pre_error',**{f'trust_{i}':str(i) for i in range(1,5)}}]
     for n,phase in enumerate(['practice','build_trust','errors_recovery','continued_interaction']):
         timeout=n==3;correct=n!=2
         records.append(dict(record_type='trial',trial_number=max(1,n),phase=phase,target_item='Gear',correct_section='A',robot_suggestion='A' if correct else 'B',robot_correct=correct,manual_check_used=n==1,manual_check_duration_ms=100 if n==1 else 0,participant_choice=None if timeout else 'A',followed_robot=not timeout and correct,participant_correct=not timeout,response_time_ms=None if timeout else 500,trial_duration_ms=25000 if timeout else 500,timed_out=timeout))
-    records += [{'record_type':'trust','checkpoint':'end_phase_3',**{f'trust_{i}':7 for i in range(1,5)}},{'record_type':'workload',**{k:4 for k in e.TLX}},{'record_type':'completion','completed':True}]
+    records += [{'record_type':'trust','checkpoint':'final',**{f'trust_{i}':7 for i in range(1,5)}},{'record_type':'workload',**{k:4 for k in e.TLX}},{'record_type':'completion','completed':True}]
     return dict(uniqueid='debugClassroom_test:debugClassroom_test',cond=0,status=3,datastring=json.dumps({'data':[{'trialdata':r} for r in records]}))
 
 def alter(p, change):
@@ -21,13 +21,13 @@ def alter(p, change):
 
 class ExportTests(unittest.TestCase):
     def test_values(self):
-        out=e.transform([fixture()]);person=out['participant_data.csv'][0];self.assertEqual(person['age_range'],'25_34');self.assertEqual(person['robot_experience'],'no_experience');self.assertEqual(person['tlx_mean'],4);self.assertIsNone(person['hri_experience'])
+        out=e.transform([fixture()]);person=out['participant_data.csv'][0];self.assertEqual(person['age'],25);self.assertEqual(person['robot_experience'],'no_experience');self.assertEqual(person['tlx_mean'],4);self.assertIsNone(person['hri_experience'])
         b=out['behavior_summary.csv'][0];self.assertEqual(b['n_trials_build'],1);self.assertEqual(b['reliance_build'],1);self.assertEqual(b['mean_manual_check_time_build'],100);self.assertIsNone(b['mean_manual_check_time_error_phase']);self.assertEqual(b['accuracy_after_errors'],0);self.assertIsNone(b['rt_after_errors'])
-        self.assertEqual(out['trust_wide.csv'][0]['trust_baseline'],2.5);self.assertNotIn('trust_early_recovery',out['trust_wide.csv'][0]);self.assertEqual(out['trust_long.csv'][-1]['after_main_trial'],3)
+        self.assertEqual(out['trust_wide.csv'][0]['trust_pre_error'],2.5);self.assertNotIn('trust_early_recovery',out['trust_wide.csv'][0]);self.assertEqual(out['trust_long.csv'][-1]['after_main_trial'],3)
         for row in out['trial_data.csv']:
             for field in ['practice','robot_correct','manual_check_used','followed_robot','participant_correct','timed_out']:self.assertIn(row[field],[0,1]);self.assertIs(type(row[field]),int)
     def test_current_trust_schema(self):
-        self.assertEqual(e.POINTS, ['baseline', 'early_recovery', 'final'])
+        self.assertEqual(e.POINTS, ['pre_error', 'early_recovery', 'final'])
         self.assertEqual(len(e.WIDE), 17)  # IDs, three means and twelve item scores.
         self.assertFalse(any('post_' in field for field in e.WIDE))
 

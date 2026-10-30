@@ -8,13 +8,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONDITIONS = ['acknowledgment', 'apology', 'apology_explanation']
-POINTS = ['baseline', 'early_recovery', 'final']
-CHECKPOINTS = {'baseline':'baseline', 'early_recovery':'early_recovery', 'end_phase_3':'final'}
+POINTS = ['pre_error', 'early_recovery', 'final']
+CHECKPOINTS = {'pre_error':'pre_error', 'early_recovery':'early_recovery', 'final':'final', 'end_phase_3':'final'}
 PHASES = {'practice':'practice', 'build_trust':'build_trust', 'errors_recovery':'error_recovery', 'error_recovery':'error_recovery', 'continued_interaction':'continued_interaction'}
 TLX = dict(zip(['mental_demand','physical_demand','temporal_demand','performance','effort','frustration'], ['tlx_mental','tlx_physical','tlx_temporal','tlx_performance','tlx_effort','tlx_frustration']))
 BASE = ['participant_id','recovery_condition']
 TRIAL = BASE + ['trial_number','practice','phase','target_item','correct_section','robot_suggestion','robot_correct','manual_check_used','manual_check_start_time','manual_check_duration_ms','participant_choice','followed_robot','participant_correct','response_time_ms','trial_duration_ms','timed_out']
-PARTICIPANT = BASE + ['age_range','gender','robot_experience','hri_experience','ai_familiarity','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_practice_trials','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements']
+PARTICIPANT = BASE + ['age','gender','gender_other','robot_experience','hri_experience','ai_familiarity','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_practice_trials','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements']
 TRUST = BASE + ['measurement_point','after_main_trial'] + [f'trust_q{i}' for i in range(1,5)] + ['trust_mean']
 WIDE = BASE + [f'trust_{point}' for point in POINTS] + [f'trust_q{i}_{point}' for point in POINTS for i in range(1,5)]
 METRICS = ['n_trials','reliance','manual_check_rate','accuracy','mean_rt','mean_manual_check_time','n_rt','n_manual_check_time']
@@ -95,6 +95,8 @@ def transform(participants):
                 trials.append(row)
                 if not row['practice']: last_main=n
             elif r.get('record_type') == 'trust':
+                if r['checkpoint'] not in CHECKPOINTS:
+                    continue  # Do not relabel measurements from a different study protocol.
                 point = CHECKPOINTS[r['checkpoint']]
                 if point in checkpoints: raise ValueError('Duplicate trust checkpoint')
                 checkpoints.add(point)
@@ -114,11 +116,10 @@ def transform(participants):
         else: expected=None
         demo = only(records,'demographics'); workload=only(records,'workload')
         age = number(demo.get('age'), integer=True, low=18, high=120)
-        age_range = None if age is None else '18_24' if age<25 else '25_34' if age<35 else '35_44' if age<45 else '45_54' if age<55 else '55_64' if age<65 else '65_plus'
-        row = dict(base, age_range=age_range, completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_practice_trials=len(practice),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
+        row = dict(base, age=age, gender_other=text(demo.get('gender_other')),  completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_practice_trials=len(practice),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
         for field in ['gender','robot_experience','hri_experience','ai_familiarity','psiturk_experience']:
             raw=demo.get(field)
-            if field=='robot_experience' and isinstance(raw,str) and raw.strip().lower()=='none':
+            if field in ['robot_experience','psiturk_experience'] and isinstance(raw,str) and raw.strip().lower()=='none':
                 row[field]='no_experience'
             else:
                 value=text(raw); normalized=value.lower().replace('-', '_').replace(' ', '_') if value else None
