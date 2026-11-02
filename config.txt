@@ -148,7 +148,7 @@ keywords = HRI, development
 [Database Parameters]
 # Participant data will be stored in this database.
 # If ON_CLOUD=1, then this defaults to env var $DATABASE_URL, if set.
-database_url = sqlite:////home/panos/hri-experiment/participants.db
+database_url = sqlite:///participants.db
 
 # psiTurk creates several database tables to store data and to manage aspects of
 # automated tasks, campaigns, etc...
@@ -195,7 +195,7 @@ port = 22363
 ;errorlog =
 # For backwards compatibility, `logfile` is synonymous with `errorlog`. If
 # both are set, `errorlog` will be preferred over `logfile`.
-logfile = /home/panos/hri-experiment/server.log
+logfile = server.log
 
 # Log level for the psiturk gunicorn server
 ;loglevel = 2
@@ -308,7 +308,7 @@ num_counters = 1
 launch_in_mode = sandbox
 
 # A file location for where to store a history of psiturk shell commands
-persistent_history_file = /home/panos/hri-experiment/.psiturk_history
+persistent_history_file = .psiturk_history
 
 # A default "reason" for the shell to use when granting bonuses.
 # e.g.,
