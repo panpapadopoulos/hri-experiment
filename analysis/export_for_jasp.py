@@ -13,10 +13,14 @@ CHECKPOINTS = {'pre_error':'pre_error', 'early_recovery':'early_recovery', 'fina
 PHASES = {'practice':'practice', 'build_trust':'build_trust', 'errors_recovery':'error_recovery', 'error_recovery':'error_recovery', 'continued_interaction':'continued_interaction'}
 TLX = dict(zip(['mental_demand','physical_demand','temporal_demand','performance','effort','frustration'], ['tlx_mental','tlx_physical','tlx_temporal','tlx_performance','tlx_effort','tlx_frustration']))
 BASE = ['participant_id','recovery_condition']
-TRIAL = BASE + ['trial_number','practice','phase','target_item','correct_section','robot_suggestion','robot_correct','manual_check_used','manual_check_start_time','manual_check_duration_ms','participant_choice','followed_robot','participant_correct','response_time_ms','trial_duration_ms','timed_out']
-PARTICIPANT = BASE + ['age','gender','gender_other','robot_experience','hri_experience','ai_familiarity','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_practice_trials','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements']
-TRUST = BASE + ['measurement_point','after_main_trial'] + [f'trust_q{i}' for i in range(1,5)] + ['trust_mean']
-WIDE = BASE + [f'trust_{point}' for point in POINTS] + [f'trust_q{i}_{point}' for point in POINTS for i in range(1,5)]
+TRIAL = BASE + ['trial_number','phase','target_item','correct_section','robot_suggestion','robot_correct','manual_check_used','manual_check_start_time','manual_check_duration_ms','participant_choice','followed_robot','participant_correct','response_time_ms','trial_duration_ms','timed_out']
+PARTICIPANT = BASE + ['age','gender','gender_other','robot_experience','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements']
+MDMT_RELIABLE = ['mdmt_reliable','mdmt_predictable','mdmt_count_on','mdmt_consistent']
+MDMT_CAPABLE = ['mdmt_capable','mdmt_skilled','mdmt_competent','mdmt_meticulous']
+MDMT_ITEMS = MDMT_RELIABLE + MDMT_CAPABLE
+MDMT_SCORES = ['mdmt_reliability_mean','mdmt_capability_mean','mdmt_capacity_mean','mdmt_reliability_n','mdmt_capability_n','mdmt_capacity_n']
+TRUST = BASE + ['instrument','measurement_point','after_main_trial'] + MDMT_ITEMS + MDMT_SCORES
+WIDE = BASE + [f'{field}_{point}' for point in POINTS for field in MDMT_SCORES + MDMT_ITEMS]
 METRICS = ['n_trials','reliance','manual_check_rate','accuracy','mean_rt','mean_manual_check_time','n_rt','n_manual_check_time']
 BEHAVIOR = BASE + [f'{m}_{phase}' for phase in ['build','error_phase','recovery'] for m in METRICS] + [f'{m}_{window}' for window in ['before_errors','after_errors'] for m in ['n_trials','reliance','manual_check','rt','accuracy']]
 SCHEMAS = {'trial_data.csv':TRIAL,'participant_data.csv':PARTICIPANT,'trust_long.csv':TRUST,'trust_wide.csv':WIDE,'behavior_summary.csv':BEHAVIOR}
@@ -95,14 +99,19 @@ def transform(participants):
                 trials.append(row)
                 if not row['practice']: last_main=n
             elif r.get('record_type') == 'trust':
-                if r['checkpoint'] not in CHECKPOINTS:
+                if r.get('instrument') != 'mdmt_capacity_v1' or r['checkpoint'] not in CHECKPOINTS:
                     continue  # Do not relabel measurements from a different study protocol.
                 point = CHECKPOINTS[r['checkpoint']]
                 if point in checkpoints: raise ValueError('Duplicate trust checkpoint')
                 checkpoints.add(point)
-                row = dict(base, measurement_point=point, after_main_trial=last_main)
-                for i in range(1,5): row[f'trust_q{i}'] = number(r.get(f'trust_{i}'), integer=True, low=1, high=7)
-                row['trust_mean'] = complete_mean([row[f'trust_q{i}'] for i in range(1,5)])
+                row = dict(base, instrument='mdmt_capacity_v1', measurement_point=point, after_main_trial=last_main)
+                for field in MDMT_ITEMS: row[field] = number(r.get(field), integer=True, low=0, high=7)
+                for label, fields in [('reliability',MDMT_RELIABLE),('capability',MDMT_CAPABLE),('capacity',MDMT_ITEMS)]:
+                    values = [row[field] for field in fields]
+                    row[f'mdmt_{label}_n'] = sum(value is not None for value in values)
+                    row[f'mdmt_{label}_mean'] = mean(values)
+                if not row['mdmt_reliability_n'] or not row['mdmt_capability_n']:
+                    row['mdmt_capacity_mean'] = None
                 trust.append(row)
         main = [t for t in trials if not t['practice']]; practice = [t for t in trials if t['practice']]
         for group in [main,practice]:
@@ -115,9 +124,9 @@ def transform(participants):
                 if t['phase']!=expected_phase: raise ValueError('Phase inconsistent with saved settings')
         else: expected=None
         demo = only(records,'demographics'); workload=only(records,'workload')
-        age = number(demo.get('age'), integer=True, low=18, high=120)
-        row = dict(base, age=age, gender_other=text(demo.get('gender_other')),  completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_practice_trials=len(practice),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
-        for field in ['gender','robot_experience','hri_experience','ai_familiarity','psiturk_experience']:
+        age = number(demo.get('age'), integer=True, low=18, high=80)
+        row = dict(base, age=age, gender_other=text(demo.get('gender_other')),  completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
+        for field in ['gender','robot_experience','psiturk_experience']:
             raw=demo.get(field)
             if field in ['robot_experience','psiturk_experience'] and isinstance(raw,str) and raw.strip().lower()=='none':
                 row[field]='no_experience'
@@ -129,8 +138,8 @@ def transform(participants):
         row['tlx_mean']=complete_mean([row[k] for k in TLX.values()])
         wide=dict(base)
         for t in trust:
-            point=t['measurement_point'];wide[f'trust_{point}']=t['trust_mean']
-            for i in range(1,5):wide[f'trust_q{i}_{point}']=t[f'trust_q{i}']
+            point=t['measurement_point']
+            for field in MDMT_SCORES + MDMT_ITEMS: wide[f'{field}_{point}']=t[field]
         behavior=dict(base)
         for phase,label in [('build_trust','build'),('error_recovery','error_phase'),('continued_interaction','recovery')]:
             for metric,value in summarize([t for t in main if t['phase']==phase]).items(): behavior[f'{metric}_{label}']=value
@@ -138,7 +147,7 @@ def transform(participants):
         for label,group in [('before_errors',[t for t in main if t['trial_number']<min(errors)] if errors else []),('after_errors',[t for t in main if t['trial_number']>max(errors)] if errors else [])]:
             stats=summarize(group)
             for target,source in [('n_trials','n_trials'),('reliance','reliance'),('manual_check','manual_check_rate'),('rt','mean_rt'),('accuracy','accuracy')]:behavior[f'{target}_{label}']=stats[source]
-        output['trial_data.csv']+=trials;output['participant_data.csv'].append(row);output['trust_long.csv']+=trust;output['trust_wide.csv'].append(wide);output['behavior_summary.csv'].append(behavior)
+        output['trial_data.csv'] += [{key:value for key,value in trial.items() if key != 'practice'} for trial in main];output['participant_data.csv'].append(row);output['trust_long.csv']+=trust;output['trust_wide.csv'].append(wide);output['behavior_summary.csv'].append(behavior)
     return output
 
 def export(database, output):

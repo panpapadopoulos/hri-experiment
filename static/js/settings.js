@@ -1,7 +1,7 @@
 "use strict";
 window.HRI = {};
 HRI.config = {
- practiceTrials:0, buildTrustTrials:4, errorPhaseTrials:7, recoveryTrials:4,
+ trustInstrument:"mdmt_capacity_v1", practiceTrials:0, buildTrustTrials:4, errorPhaseTrials:7, recoveryTrials:4,
  // One-based main-task numbers, EXCLUDING practice. Errors must be in Phase 2.
  errorTrials:[5,8,11], trialTimeLimitMs:12000, taskTimeLimitMs:600000,
  // Main-task checkpoint: two correct trials after the first scheduled error.

@@ -6,7 +6,7 @@ Run `~/psiturk_env/bin/python analysis/export_for_jasp.py` from the project. Out
 
 CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. Exact numeric age and the Other gender self-description are exported. No JSON, feedback comments, email, student ID or IP are exported. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
 
-Current trust occasions are pre_error (after main trial 4), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Item wording and scoring remain provisional.
+Current trust occasions are pre_error (after main trial 4), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Trust uses original MDMT v1 Capacity Trust; workload ratings remain provisional.
 
 Behavior summaries exclude practice. Rates include timeouts as non-following/incorrect according to raw coding. Mean RT excludes missing/timeout responses. Mean inspection time includes only used checks. Empty groups give counts 0 and blank means/rates. Incomplete sessions summarize observed trials only. No imputation or zero-filling of missing questionnaires.
 
@@ -20,9 +20,8 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 |---|---|---|
 | participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
 | recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| trial_number | Integer | One-based within practice or main task; use participant_id + practice + trial_number as row key. |
-| practice | Binary | 1 practice, 0 main task. |
-| phase | Categorical | practice, build_trust, error_recovery, continued_interaction. Raw errors_recovery normalized to error_recovery. |
+| trial_number | Integer | One-based main task number; use participant_id + trial_number as row key. |
+| phase | Categorical | build_trust, error_recovery, continued_interaction. Raw errors_recovery normalized to error_recovery. |
 | target_item | Text | Rack object name as recorded. |
 | correct_section | Categorical | A, B, C, D; recorded correct rack row. |
 | robot_suggestion | Categorical | A, B, C, D; robot recommended row. |
@@ -47,8 +46,6 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 | gender | Categorical | male, female, non_binary, other, prefer_not_to_say; unrecognized legacy free-text is mapped to other. |
 | gender_other | Text | Self-description supplied when gender is Other; blank otherwise. |
 | robot_experience | Categorical | no_experience, a_little, moderate, extensive, prefer_not_to_say. Blank if not recorded. |
-| hri_experience | Categorical | Not currently collected; blank. No inference from robot_experience. |
-| ai_familiarity | Categorical | Not currently collected; blank. |
 | psiturk_experience | Categorical | Not currently collected; blank. |
 | tlx_mental | Integer 1-7 | Mental demand. 1 very low, 7 very high. |
 | tlx_physical | Integer 1-7 | Physical demand. 1 very low, 7 very high. |
@@ -60,7 +57,6 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 | completed | Binary | 1 saved completion record exists, 0 otherwise. Does not imply platform payment or submission. |
 | psiturk_status | Integer | Unmodified PsiTurk lifecycle status code; use completed for this exporter completion filtering. |
 | code_version | Text | Recorded experiment code version; blank if no saved session record. |
-| n_practice_trials | Integer count | Number of saved practice trials. |
 | n_main_trials | Integer count | Number of saved main trials. |
 | expected_main_trials | Integer count | Sum of block counts in that participant saved settings; blank if unavailable. |
 | main_trials_complete | Binary | 1 main trial count matches saved settings; 0 does not; blank if expected count unknown. |
@@ -68,39 +64,15 @@ Exporter validates conditions, contiguous numbering, unique trials/checkpoints, 
 
 ## trust_long.csv
 
-| Column | Type / values | Meaning / coding |
-|---|---|---|
-| participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
-| recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| measurement_point | Categorical | pre_error, early_recovery, final. |
-| after_main_trial | Integer | Most recent main trial before the trust record in raw sequence; 0 for pre_error after practice. |
-| trust_q1 | Integer 1-7 | I trust the robot recommendations. 1 strongly disagree, 7 strongly agree; provisional item. |
-| trust_q2 | Integer 1-7 | I believe the robot is reliable. 1 strongly disagree, 7 strongly agree; provisional item. |
-| trust_q3 | Integer 1-7 | I feel confident relying on the robot. 1 strongly disagree, 7 strongly agree; provisional item. |
-| trust_q4 | Integer 1-7 | I would follow the robot recommendation without checking. 1 strongly disagree, 7 strongly agree; provisional item. |
-| trust_mean | Numeric 1-7 | Arithmetic mean of all four trust items; blank unless all four exist. |
+One row per submitted MDMT measurement. instrument is mdmt_capacity_v1. measurement_point is pre_error (trial 4), early_recovery (trial 7), or final (task end). after_main_trial gives the actual completed trial number.
+
+The eight item columns are mdmt_reliable, mdmt_predictable, mdmt_count_on, mdmt_consistent, mdmt_capable, mdmt_skilled, mdmt_competent, mdmt_meticulous. Each is integer 0?7; blank means Does Not Fit or missing. Zero is a valid lowest rating.
+
+mdmt_reliability_mean and mdmt_capability_mean average available items in their respective four-item subscales. mdmt_capacity_mean averages available ratings across the eight items, following original MDMT v1 scoring; it is blank if either subscale has no valid items. The corresponding mdmt_reliability_n, mdmt_capability_n and mdmt_capacity_n report valid-item counts. Inspect counts when interpreting partial scores.
 
 ## trust_wide.csv
 
-| Column | Type / values | Meaning / coding |
-|---|---|---|
-| participant_id | Text | Pseudonymous PsiTurk session identifier; unique per classroom session, not proof of a unique person. |
-| recovery_condition | Categorical | acknowledgment, apology, apology_explanation; from server condition 0, 1, 2; checked against all records. |
-| trust_pre_error | Numeric 1-7 | Four-item mean at pre_error; blank if occasion or any item missing. |
-| trust_early_recovery | Numeric 1-7 | Four-item mean at early_recovery; blank if occasion or any item missing. |
-| trust_final | Numeric 1-7 | Four-item mean at final; blank if occasion or any item missing. |
-| trust_q1_pre_error | Integer 1-7 | Trust item 1 at pre_error; blank if unobserved. |
-| trust_q2_pre_error | Integer 1-7 | Trust item 2 at pre_error; blank if unobserved. |
-| trust_q3_pre_error | Integer 1-7 | Trust item 3 at pre_error; blank if unobserved. |
-| trust_q4_pre_error | Integer 1-7 | Trust item 4 at pre_error; blank if unobserved. |
-| trust_q1_early_recovery | Integer 1-7 | Trust item 1 at early_recovery; blank if unobserved. |
-| trust_q2_early_recovery | Integer 1-7 | Trust item 2 at early_recovery; blank if unobserved. |
-| trust_q3_early_recovery | Integer 1-7 | Trust item 3 at early_recovery; blank if unobserved. |
-| trust_q4_early_recovery | Integer 1-7 | Trust item 4 at early_recovery; blank if unobserved. |
-| trust_q1_final | Integer 1-7 | Trust item 1 at final; blank if unobserved. |
-| trust_q2_final | Integer 1-7 | Trust item 2 at final; blank if unobserved. |
-| trust_q3_final | Integer 1-7 | Trust item 3 at final; blank if unobserved. |
-| trust_q4_final | Integer 1-7 | Trust item 4 at final; blank if unobserved. |
+One row per submitted participant. Each item, score and valid-item count above has a _pre_error, _early_recovery, or _final suffix. Missing occasions are blank. Older provisional questionnaires are never converted to MDMT ratings.
 
 ## behavior_summary.csv
 

@@ -41,3 +41,8 @@ def register_researcher(state):
                 stream.write(secrets.token_hex(32))
         state.app.secret_key = key_path.read_text().strip()
     state.app.register_blueprint(researcher)
+
+@custom_code.before_app_request
+def direct_study_entry():
+    if request.path == '/' and request.method == 'GET':
+        return new_participant()

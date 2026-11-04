@@ -22,7 +22,6 @@ HRI.submitData=function(next){
  psiTurk.saveData({success:next,error:function(){HRI.screen('<h1>Save failed</h1><p>Keep this page open. Your responses are still held here.</p><button id="retry">Retry save</button>');document.getElementById('retry').onclick=()=>HRI.submitData(next);}});
 };
 HRI.continuePage=function(title,content,next){HRI.screen(`<div class="task-layout task-transition"><div class="task-content"><h1>${title}</h1>${content}</div><div class="task-action-area"><button id="continue">Continue</button></div><div class="task-footer" aria-hidden="true"></div></div>`);document.getElementById('continue').onclick=()=>{if(HRI.deadline&&Date.now()>=HRI.deadline)HRI.endTask('time_limit');else next();};};
-HRI.trust=function(checkpoint,next){HRI.questionnaire('Trust in the robot',HRI.trustItems.map((s,i)=>['trust_'+(i+1),s,'Strongly disagree','Strongly agree']),7,values=>{HRI.record('trust',{checkpoint,...values});HRI.save(next);});};
 HRI.phase=function(phase,count,first,next){
  let index=0;
  const run=function(){

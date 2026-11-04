@@ -1,3 +1,29 @@
+## Run or publish
+
+- **Run the real data-collecting PsiTurk experiment:** [RUNNING.md](RUNNING.md).
+- **Preview the identical participant flow without saving responses:** [demo/README.md](demo/README.md).
+- **Publish only the demo on GitHub Pages:** use the manual `Publish demo to GitHub Pages` workflow after pushing these files. The repository still contains the complete real experiment.
+
+## Plain-language survey help
+
+Original MDMT item labels are retained with investigator-written plain-language explanations. These explanations are an administration adaptation, not part of the validated original wording. Trust records store explanation_version=plain_language_v1. Numeric scoring is unchanged. Workload items also include explanations, including the reversed performance anchors (1 good, 7 poor).
+
+## Responsive participant screens and validation
+
+Participant pages use a wider, mostly card-free layout. At widths up to 600px, MDMT retains all eight items on one page with answer menus using the same 0?7 / Does Not Fit coding; workload uses the same responsive controls. Consent has three short mobile pages, with agreement on the final page. Image-heavy instruction slides split into separate visual and explanation pages on narrow displays. Desktop retains the full matrix and consent layout.
+
+Demographics show inline validation messages after editing or leaving an invalid field. Age requires a whole number from 18 through 80, with a red border, accessible invalid state and explicit correction message. Required controls continue to prevent submission until valid. Browser checks cover desktop, 390x744 and 360x640; actual phone keyboard, safe-area and touch behavior still require hardware verification.
+
+## Current questionnaire update (November 3, 2026)
+
+Opening `/` starts a fresh classroom identifier and redirects directly to the welcome page; the thank-you page still starts a new participant. Consent includes risks/benefits and study contacts. The video follows demographics.
+
+Trust uses the original MDMT v1 Capacity factor (Ullman & Malle, 2019): Reliable and Capable subscales, eight items, 0?7 plus Does Not Fit. All items appear on one page at each checkpoint. Workload also appears on one page. Required rows must be answered; Does Not Fit is a valid response stored as null. Timing remains after trials 4, 7 and final. Code version 0.3.0 distinguishes this instrument from earlier provisional questions.
+
+CSV trust columns use named mdmt_* items, reliability/capability/capacity means, and valid-item counts. Does Not Fit is missing, never zero. Available-item means follow the original MDMT scoring; capacity is left blank if an entire subscale is missing. Older provisional trust records remain raw but are not exported as MDMT. Submitted-only exports remain in analysis/exports.
+
+Source: https://hriscaledatabase.psychology.gmu.edu/assets/pdf/CurrentVersion_MDMT.pdf
+
 ## Current protocol (October 29, 2026)
 
 Flow: landing ? consent ? required demographics ? condition-specific video ? paged instructions with Previous ? 15 main trials (no practice) ? final questionnaires ? Submit. Videos are Acknowledge.mp4, Apology.mp4, and ApologyExplanation.mp4. Instruction examples use the corresponding supplied recovery screenshot. Exposing the assigned recovery style before the task is part of this protocol, so the pre-error measure is not a naive baseline.

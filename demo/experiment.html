@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Security-Policy" content="connect-src 'none'; form-action 'self'; base-uri 'self'">
+
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>Building, Losing, and Recovering Trust in HRI</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="assets/css/style.css" type="text/css" />
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=2" />
+
+    <!--
+      The exp.html is the main form that
+      controls the experiment.
+
+      see comments throughout for advice
+    -->
+    <!-- libraries used in your experiment
+        psiturk specifically depends on underscore.js, backbone.js and jquery
+    -->
+        <script src="assets/lib/jquery-3.4.1.min.js" type="text/javascript"> </script>
+        <script src="assets/lib/underscore-min.js" type="text/javascript"> </script>
+        <script src="assets/lib/backbone-min.js" type="text/javascript"> </script>
+
+
+        <script type="text/javascript">
+            // These fields provided by the psiTurk Server
+            var uniqueId = "demo";  // a unique string identifying the worker/task
+            var condition = 0; // the condition number
+            var counterbalance = 0; // a number indexing counterbalancing conditions
+            var codeversion = "0.3.0"; // a string representing the current experiment version
+            var contact_address = ""; // your email address
+            var adServerLoc = ""; // the location of your ad (so you can send user back at end of experiment)
+            var mode = "demo";
+        </script>
+
+        <!-- utils.js and psiturk.js provide the basic psiturk functionality -->
+
+        <script src="assets/js/demo-runtime.js" type="text/javascript"> </script>
+
+        <!-- task.js is where you experiment code actually lives
+            for most purposes this is where you want to focus debugging, development, etc...
+        -->
+        <script src="assets/js/settings.js"></script>
+<script src="assets/js/stimuli.js"></script>
+<script src="assets/js/questionnaires.js"></script>
+<script src="assets/js/trial.js"></script>
+<script src="assets/js/task.js" type="text/javascript"> </script>
+<script src="assets/js/flow.js"></script>
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="assets/css/style.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/css/viewport.css">
+<script src="assets/js/viewport.js" defer></script>
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+
+<body>
+
+  <noscript>
+    <h1>Warning: Javascript seems to be disabled</h1>
+    <p>This website requires that Javascript be enabled on your browser.</p>
+    <p>Instructions for enabling Javascript in your browser can be found
+    <a href="http://support.google.com/bin/answer.py?hl=en&answer=23852">here</a></p>
+  </noscript>
+
+</body>
+
+</html>
