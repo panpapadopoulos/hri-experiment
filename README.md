@@ -1,3 +1,7 @@
+## Submission overview
+
+See [SUBMISSION_NOTES.md](SUBMISSION_NOTES.md) for the current implementation, mapping to the proposal, validation, and limits on phase-two conclusions. This is an implementation-phase submission; data collection, analysis and the results report come later. [RUNNING.md](RUNNING.md) explains how to run the real experiment or the static demo. Older dated notes below describe development history; the submission notes describe the delivered protocol.
+
 ## Run or publish
 
 - **Run the real data-collecting PsiTurk experiment:** [RUNNING.md](RUNNING.md).

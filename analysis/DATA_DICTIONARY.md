@@ -4,7 +4,7 @@
 
 Run `~/psiturk_env/bin/python analysis/export_for_jasp.py` from the project. Output: `analysis/exports/`. Classroom IDs only (workerid starts with debugClassroom_). Only submitted sessions are exported. Use main_trials_complete to identify whether all 15 main trials were completed before the overall timeout. Existing raw records and earlier CSV exports are never modified; these five derived CSVs are regenerated.
 
-CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. Exact numeric age and the Other gender self-description are exported. No JSON, feedback comments, email, student ID or IP are exported. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
+CSV is UTF-8 with BOM for Excel, fixed snake_case headers, decimal numeric values, binary 0/1, and blank missing cells. Exact numeric age and the Other gender self-description are exported. No JSON, email, student ID or IP fields are exported. Optional feedback comments are exported as text. Participant ID is the existing pseudonymous session identifier. Current demographic options are normalized; unrecognized legacy free-form gender is exported as other, not verbatim.
 
 Current trust occasions are pre_error (after main trial 4), early_recovery (after main trial 7), final (after trial 15). Exports contain only these three current measurement occasions. after_main_trial documents actual timing. Trust uses original MDMT v1 Capacity Trust; workload ratings remain provisional.
 
@@ -116,3 +116,7 @@ One row per submitted participant. Each item, score and valid-item count above h
 | accuracy_after_errors | Numeric proportion 0-1 | Mean participant_correct in after_errors window; see window definitions below. |
 
 Current protocol: exact numeric age (18?80 for new sessions), gender_other contains the required self-description when Other is selected. psiturk_experience and robot_experience use None, A little, Moderate, Extensive (normalized in exports). No practice trials. Main trials last 12 seconds, with a 600-second overall task limit. A timeout may produce fewer than 15 trials; inspect main_trials_complete. Old after-practice baseline records are omitted rather than relabeled as pre-error trust; end_phase_3 still maps to final.
+
+## Completion and qualitative context
+
+participant_data.csv also includes task_end_reason (completed_trials or time_limit), task_elapsed_ms (elapsed timed-task duration), and feedback_comments (optional final written response). These fields are actually recorded by the current task. Trust long rows include explanation_version to identify the plain-language item explanations. Written text beginning with =, +, - or @ is prefixed with an apostrophe for spreadsheet safety. Keep written feedback out of numeric JASP analyses.

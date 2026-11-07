@@ -64,6 +64,18 @@ class ExportTests(unittest.TestCase):
                             self.assertNotIn(value.lower(),['undefined','null','none','n/a','[object object]']);self.assertFalse(value.startswith(('{','[')));self.assertNotIn('<',value)
             with (root/'out/trust_wide.csv').open(encoding='utf-8-sig') as f:self.assertEqual(next(csv.DictReader(f))['mdmt_capacity_mean_early_recovery'],'')
 class MDMTTests(unittest.TestCase):
+    def test_collection_context(self):
+        p=alter(fixture(),lambda rows:rows.extend([
+            {'trialdata':{'record_type':'task_end','reason':'time_limit','elapsed_ms':600001}},
+            {'trialdata':{'record_type':'feedback','comments':'I checked after mistakes.'}}
+        ]))
+        person=e.transform([p])['participant_data.csv'][0]
+        self.assertEqual(person['task_end_reason'],'time_limit')
+        self.assertEqual(person['task_elapsed_ms'],600001)
+        self.assertEqual(person['feedback_comments'],'I checked after mistakes.')
+        self.assertEqual(e.free_text('=1+1'),"'=1+1")
+        self.assertEqual(e.free_text('nonbinary <other>'),'nonbinary <other>')
+
     def test_zero_and_all_missing(self):
         p=alter(fixture(),lambda rows:rows[2]['trialdata'].update(**{key:0 for key in e.MDMT_ITEMS}))
         self.assertEqual(e.transform([p])['trust_long.csv'][0]['mdmt_capacity_mean'],0)

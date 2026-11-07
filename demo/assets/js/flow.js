@@ -39,11 +39,11 @@ HRI.instructions=function(page=0){
  ['Your task: locate the item',`<div class="task-preview-layout">
  <figure class="trial-preview" aria-label="Non-interactive example of the trial screen">
  <div class="preview-clock">Task time remaining <strong>10:00</strong></div>
- <div class="preview-topline"><div class="target-display"><p class="eyebrow">Item to find</p><h2>GEAR</h2></div><div class="preview-trial-time"><small>Trial time</small><strong>00:12</strong></div></div>
+ <div class="preview-topline"><div class="target-display"><p class="eyebrow">Item to find</p><h2>GEAR</h2></div><div class="preview-tools"><div class="example-manual">Manual Check</div><div class="preview-trial-time"><small>Trial time</small><strong>00:12</strong></div></div></div>
  <div class="preview-pepper"><img src="assets/images/Suggestion1.png" alt="Pepper robot"><div class="speech-bubble"><h3>Pepper</h3><p>I think it is in Section A.</p></div></div>
  <p class="preview-prompt">Where is the item?</p>
  <div class="example-choices"><span>Section <b>A</b></span><span>Section <b>B</b></span><span>Section <b>C</b></span><span>Section <b>D</b></span></div>
- <div class="example-manual">Manual Check</div>
+
  <figcaption>Example screen only. The timers are not running.</figcaption>
  </figure>
  <div class="preview-explanation"><p><strong>Find the named item in the rack.</strong> Choose the row where it belongs: A, B, C, or D.</p>

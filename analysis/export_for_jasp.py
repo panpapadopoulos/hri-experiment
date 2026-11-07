@@ -14,12 +14,12 @@ PHASES = {'practice':'practice', 'build_trust':'build_trust', 'errors_recovery':
 TLX = dict(zip(['mental_demand','physical_demand','temporal_demand','performance','effort','frustration'], ['tlx_mental','tlx_physical','tlx_temporal','tlx_performance','tlx_effort','tlx_frustration']))
 BASE = ['participant_id','recovery_condition']
 TRIAL = BASE + ['trial_number','phase','target_item','correct_section','robot_suggestion','robot_correct','manual_check_used','manual_check_start_time','manual_check_duration_ms','participant_choice','followed_robot','participant_correct','response_time_ms','trial_duration_ms','timed_out']
-PARTICIPANT = BASE + ['age','gender','gender_other','robot_experience','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements']
+PARTICIPANT = BASE + ['age','gender','gender_other','robot_experience','psiturk_experience'] + list(TLX.values()) + ['tlx_mean','completed','psiturk_status','code_version','n_main_trials','expected_main_trials','main_trials_complete','n_trust_measurements','task_end_reason','task_elapsed_ms','feedback_comments']
 MDMT_RELIABLE = ['mdmt_reliable','mdmt_predictable','mdmt_count_on','mdmt_consistent']
 MDMT_CAPABLE = ['mdmt_capable','mdmt_skilled','mdmt_competent','mdmt_meticulous']
 MDMT_ITEMS = MDMT_RELIABLE + MDMT_CAPABLE
 MDMT_SCORES = ['mdmt_reliability_mean','mdmt_capability_mean','mdmt_capacity_mean','mdmt_reliability_n','mdmt_capability_n','mdmt_capacity_n']
-TRUST = BASE + ['instrument','measurement_point','after_main_trial'] + MDMT_ITEMS + MDMT_SCORES
+TRUST = BASE + ['instrument','explanation_version','measurement_point','after_main_trial'] + MDMT_ITEMS + MDMT_SCORES
 WIDE = BASE + [f'{field}_{point}' for point in POINTS for field in MDMT_SCORES + MDMT_ITEMS]
 METRICS = ['n_trials','reliance','manual_check_rate','accuracy','mean_rt','mean_manual_check_time','n_rt','n_manual_check_time']
 BEHAVIOR = BASE + [f'{m}_{phase}' for phase in ['build','error_phase','recovery'] for m in METRICS] + [f'{m}_{window}' for window in ['before_errors','after_errors'] for m in ['n_trials','reliance','manual_check','rt','accuracy']]
@@ -46,6 +46,14 @@ def text(value):
     if any(c in value for c in '<>\r\n') or value.startswith(('=', '+', '@', '{', '[')):
         raise ValueError('Unsafe or structured text field')
     return value
+
+def free_text(value):
+    if value is None: return None
+    if not isinstance(value, str): raise ValueError('Non-text written response')
+    value = value.strip()
+    if not value: return None
+    # Prevent spreadsheet formula execution while retaining participants' words.
+    return "'" + value if value.startswith(('=', '+', '-', '@')) else value
 
 def mean(values):
     values = [v for v in values if v is not None]
@@ -104,7 +112,7 @@ def transform(participants):
                 point = CHECKPOINTS[r['checkpoint']]
                 if point in checkpoints: raise ValueError('Duplicate trust checkpoint')
                 checkpoints.add(point)
-                row = dict(base, instrument='mdmt_capacity_v1', measurement_point=point, after_main_trial=last_main)
+                row = dict(base, instrument='mdmt_capacity_v1', explanation_version=text(r.get('explanation_version')), measurement_point=point, after_main_trial=last_main)
                 for field in MDMT_ITEMS: row[field] = number(r.get(field), integer=True, low=0, high=7)
                 for label, fields in [('reliability',MDMT_RELIABLE),('capability',MDMT_CAPABLE),('capacity',MDMT_ITEMS)]:
                     values = [row[field] for field in fields]
@@ -125,7 +133,11 @@ def transform(participants):
         else: expected=None
         demo = only(records,'demographics'); workload=only(records,'workload')
         age = number(demo.get('age'), integer=True, low=18, high=80)
-        row = dict(base, age=age, gender_other=text(demo.get('gender_other')),  completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
+        row = dict(base, age=age, gender_other=free_text(demo.get('gender_other')),  completed=int(any(r.get('record_type')=='completion' and binary(r.get('completed'))==1 for r in records)), psiturk_status=participant['status'],code_version=text(session.get('code_version')),n_main_trials=len(main),expected_main_trials=expected,main_trials_complete=int(len(main)==expected) if expected is not None else None,n_trust_measurements=len(trust))
+        ending=only(records,'task_end')
+        row['task_end_reason']=text(ending.get('reason'))
+        row['task_elapsed_ms']=number(ending.get('elapsed_ms'), low=0)
+        row['feedback_comments']=free_text(only(records,'feedback').get('comments'))
         for field in ['gender','robot_experience','psiturk_experience']:
             raw=demo.get(field)
             if field in ['robot_experience','psiturk_experience'] and isinstance(raw,str) and raw.strip().lower()=='none':

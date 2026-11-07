@@ -2,9 +2,9 @@
 HRI.runTrial=function(trial,done){
  HRI.screen(`<div id="trial-interface" class="trial-interface task-layout"><div class="task-content">
  ${trial.phase==='practice'?`<p class="practice-label">Practice ${trial.trial_number} of ${HRI.config.practiceTrials}</p>`:''}
- <div class="trial-topline"><div class="target-display"><p class="eyebrow">Item to find</p><h1>${trial.target_item}</h1></div><div class="trial-clock-slot"><p class="trial-countdown" role="timer" aria-label="Trial time remaining"><span class="clock-label">Trial time</span><strong id="time" data-trial-clock></strong></p></div></div>
+ <div class="trial-topline"><div class="target-display"><p class="eyebrow">Item to find</p><h1>${trial.target_item}</h1></div><div class="trial-tools"><div class="manual-control"><button id="manual" class="secondary">Manual Check</button><span>View the rack before choosing</span></div><div class="trial-clock-slot"><p class="trial-countdown" role="timer" aria-label="Trial time remaining"><span class="clock-label">Trial time</span><strong id="time" data-trial-clock></strong></p></div></div></div>
  ${HRI.pepper(`I think it is in Section ${trial.robot_suggestion}.`)}
- </div><div id="choices" class="task-action-area"><p class="choice-prompt">Where is the item?</p><div class="choices">${HRI.sections.map(s=>`<button data-choice="${s}" aria-label="Section ${s}"><span>Section</span><strong>${s}</strong></button>`).join('')}</div><div class="manual-control"><button id="manual" class="secondary">Manual Check</button><span>View the rack before choosing</span></div></div>
+ </div><div id="choices" class="task-action-area"><p class="choice-prompt">Where is the item?</p><div class="choices">${HRI.sections.map(s=>`<button data-choice="${s}" aria-label="Section ${s}"><span>Section</span><strong>${s}</strong></button>`).join('')}</div></div>
  <div class="task-footer" aria-hidden="true"></div></div>
  <section id="rack" class="rack-inspection" role="dialog" aria-modal="true" aria-labelledby="inspection-target" hidden>
  <header class="inspection-header"><div class="inspection-target"><p class="eyebrow">Looking for</p><h2 id="inspection-target">${trial.target_item}</h2></div><button id="back" class="secondary" aria-label="Back to choices">&larr; Back</button></header>
